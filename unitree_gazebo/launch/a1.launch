@@ -30,4 +30,11 @@
     <node pkg="gazebo_ros" type="spawn_model" name="urdf_spawner" respawn="false" output="screen"
               args="-urdf -z 0.6 -model $(arg rname)_gazebo -param robot_description"/>
 
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(arg dollar)$(arg robot_path)/config/a1_controller.yaml" command="load"/>
+
+    <!-- load the controllers -->
+    <node pkg="controller_manager" type="spawner" name="controller_spawner" respawn="false"
+          output="screen" ns="/$(arg rname)_gazebo" args="A1_controller "/>
+
 </launch>

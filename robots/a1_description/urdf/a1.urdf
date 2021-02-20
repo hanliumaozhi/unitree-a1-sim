@@ -699,7 +699,7 @@
   </transmission>
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <robotNamespace>/A1</robotNamespace>
+      <robotNamespace>/a1_gazebo</robotNamespace>
     </plugin>
   </gazebo>
 </robot>

@@ -1,5 +1,5 @@
 string[12] joint_name
-float32[12] q
-float32[12] dq
-float32[12] tau
+float64[12] q
+float64[12] dq
+float64[12] tau
 time stamp

@@ -52,6 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    MotorState.msg
+        MotorCmd.msg
 #   Message2.msg
 )
 

@@ -13,7 +13,7 @@ A1Controller::A1Controller()
 
 A1Controller::~A1Controller()
 {
-
+    sub_cmd_.shutdown();
 }
 
 bool A1Controller::init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n)

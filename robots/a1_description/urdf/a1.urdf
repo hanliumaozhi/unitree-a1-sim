@@ -50,7 +50,9 @@
       <geometry>
         <mesh filename="package://a1_description/meshes/trunk.dae" scale="1 1 1"/>
       </geometry>
-      <material name="orange"/>
+      <material name="or">
+      	<color rgba="1.0 0.423529411765 0.0392156862745 1.0"/>
+      </material>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>

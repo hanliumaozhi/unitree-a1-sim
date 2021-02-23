@@ -52,12 +52,15 @@
   <build_depend>roscpp</build_depend>
   <build_depend>song_msgs</build_depend>
   <build_depend>message_filters</build_depend>
+  <build_depend>roslib</build_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>song_msgs</build_export_depend>
   <build_export_depend>message_filters</build_export_depend>
+  <build_export_depend>roslib</build_export_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>song_msgs</exec_depend>
   <exec_depend>message_filters</exec_depend>
+  <exec_depend>roslib</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

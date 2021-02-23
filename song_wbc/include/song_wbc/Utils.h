@@ -25,5 +25,33 @@ void addA1Multibody(
         std::string filename,
         bool floating_base = true);
 
+using ContactData = std::pair<const Eigen::Vector3d, const drake::multibody::Frame<double>&>;
+
+void SetPositionsIfNew(const drake::multibody::MultibodyPlant<double>& plant,
+                       const Eigen::Ref<const drake::VectorX<double>>& q,
+                       drake::systems::Context<double>* context);
+
+/// Update an existing MultibodyPlant context, setting corresponding velocities.
+/// Will only set if value if changed from current value.
+void SetVelocitiesIfNew(const drake::multibody::MultibodyPlant<double>& plant,
+                        const Eigen::Ref<const drake::VectorX<double>>& f,
+                        drake::systems::Context<double>* context);
+
+
+/// Given a MultiBodyTree, builds a map from position name to position index
+template <typename T>
+std::map<std::string, int> makeNameToPositionsMap(
+        const drake::multibody::MultibodyPlant<T>& plant);
+
+/// Given a MultiBodyTree, builds a map from velocity name to velocity index
+template <typename T>
+std::map<std::string, int> makeNameToVelocitiesMap(
+        const drake::multibody::MultibodyPlant<T>& plant);
+
+/// Given a MultiBodyTree, builds a map from actuator name to actuator index
+template <typename T>
+std::map<std::string, int> makeNameToActuatorsMap(
+        const drake::multibody::MultibodyPlant<T>& plant);
+
 
 #endif //SONG_WBC_UTILS_H

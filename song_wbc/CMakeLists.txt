@@ -37,6 +37,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   song_msgs
         message_filters
+        roslib
 )
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -49,7 +50,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(wbc_stand_node src/WbcStand.cpp src/Utils.cpp src/OscTrackingData.cpp)
+add_executable(wbc_stand_node src/WbcStand.cpp src/Utils.cpp src/OscTrackingData.cpp src/OscStandController.cpp)
 
 target_link_libraries(wbc_stand_node
         ${catkin_LIBRARIES}

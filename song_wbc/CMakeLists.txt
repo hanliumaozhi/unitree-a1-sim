@@ -49,7 +49,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(wbc_stand_node src/WbcStand.cpp src/Utils.cpp)
+add_executable(wbc_stand_node src/WbcStand.cpp src/Utils.cpp src/OscTrackingData.cpp)
 
 target_link_libraries(wbc_stand_node
         ${catkin_LIBRARIES}

@@ -6,6 +6,7 @@
 #define SONG_WBC_UTILS_H
 
 #include <drake/multibody/plant/multibody_plant.h>
+#include <drake/multibody/parsing/parser.h>
 
 std::pair<const Eigen::Vector3d, const drake::multibody::Frame<double>&>
 LeftToeFront(const drake::multibody::MultibodyPlant<double>& plant);

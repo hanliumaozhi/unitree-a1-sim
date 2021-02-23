@@ -7,6 +7,7 @@
 
 using drake::multibody::Frame;
 using drake::multibody::MultibodyPlant;
+using drake::multibody::Parser;
 using Eigen::Vector3d;
 
 std::pair<const Vector3d, const Frame<double>&> LeftToeFront(
@@ -31,4 +32,18 @@ std::pair<const Vector3d, const Frame<double>&> RightToeRear(
         const MultibodyPlant<double>& plant) {
     return std::pair<const Vector3d, const Frame<double>&>(
             Vector3d(0, 0, -0.22), plant.GetFrameByName("RR_calf"));
+}
+
+void addA1Multibody(
+        drake::multibody::MultibodyPlant<double>* plant,
+        std::string filename,
+        bool floating_base)
+{
+    Parser parser(plant);
+
+    parser.AddModelFromFile(filename);
+    if (!floating_base) {
+        plant->WeldFrames(plant->world_frame(), plant->GetFrameByName("base"),
+                          drake::math::RigidTransform<double>(Vector3d::Zero()));
+    }
 }

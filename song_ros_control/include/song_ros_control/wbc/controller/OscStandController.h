@@ -18,7 +18,7 @@
 
 class OscStandController {
 public:
-    OscStandController(const drake::multibody::MultibodyPlant<double>& plant,
+    OscStandController(std::shared_ptr<drake::multibody::MultibodyPlant<double>> plant,
                        drake::systems::Context<double>* context,
                        bool print_info=false);
 
@@ -45,7 +45,7 @@ public:
 
 
 private:
-    const drake::multibody::MultibodyPlant<double>& plant_;
+    std::shared_ptr<drake::multibody::MultibodyPlant<double>> plant_;
 
     const drake::multibody::BodyFrame<double>& world_;
 

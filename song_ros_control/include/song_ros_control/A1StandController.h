@@ -12,13 +12,17 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <realtime_tools/realtime_buffer.h>
+#include <ros/package.h>
 
-#include <song_msgs/MotorCmd.h>
+//#include <song_msgs/MotorCmd.h>
 #include <song_msgs/MotorState.h>
+#include <nav_msgs/Odometry.h>
 
 #include <pluginlib/class_list_macros.h>
 
 #include "song_ros_control/wbc/controller/OscStandController.h"
+
+#include "drake/multibody/plant/multibody_plant.h"
 
 
 
@@ -32,12 +36,12 @@ public:
     void update(const ros::Time& time, const ros::Duration& period) override;
     virtual void stopping(){};
 
-    void cmd_cb(const song_msgs::MotorCmdConstPtr& msg);
+    void inertial_cb(const nav_msgs::OdometryConstPtr& msg);
 
 private:
     std::string name_space;
 
-    song_msgs::MotorCmd last_cmd_;
+    nav_msgs::Odometry global_state_;
     song_msgs::MotorState last_state_;
 
     ros::Subscriber sub_cmd_;
@@ -47,7 +51,7 @@ private:
     std::vector<hardware_interface::JointHandle> joint_list_;
     std::map<std::string, int> joint_name_to_index_;
 
-    realtime_tools::RealtimeBuffer<song_msgs::MotorCmd> command_;
+    realtime_tools::RealtimeBuffer<nav_msgs::Odometry> command_;
 
     std::vector<double> w_com_;
     Eigen::Matrix3d W_com_;
@@ -66,6 +70,10 @@ private:
 
     std::vector<double> k_d_pelvis_;
     Eigen::Matrix3d K_d_pelvis_;
+
+    std::shared_ptr<OscStandController> osc_;
+    std::shared_ptr<drake::multibody::MultibodyPlant<double>> plant_;
+    std::unique_ptr<drake::systems::Context<double>> context_;
 };
 
 

@@ -8,22 +8,22 @@ using Eigen::VectorXd;
 using Eigen::Vector3d;
 using Eigen::MatrixXd;
 
-OscStandController::OscStandController(const drake::multibody::MultibodyPlant<double> &plant,
+OscStandController::OscStandController(std::shared_ptr<drake::multibody::MultibodyPlant<double>> plant,
                                        drake::systems::Context<double> *context,
                                        bool print_info) :
         plant_(plant),
         context_(context),
-        world_(plant.world_frame()),
+        world_(plant->world_frame()),
         is_print_info_(print_info) {
-    n_q_ = plant_.num_positions();
-    n_v_ = plant_.num_velocities();
-    n_u_ = plant_.num_actuators();
+    n_q_ = plant_->num_positions();
+    n_v_ = plant_->num_velocities();
+    n_u_ = plant_->num_actuators();
 
     VectorXd u_min(n_u_);
     VectorXd u_max(n_u_);
     for (drake::multibody::JointActuatorIndex i(0); i < n_u_; ++i) {
-        u_min(i) = -plant_.get_joint_actuator(i).effort_limit();
-        u_max(i) = plant_.get_joint_actuator(i).effort_limit();
+        u_min(i) = -plant_->get_joint_actuator(i).effort_limit();
+        u_max(i) = plant_->get_joint_actuator(i).effort_limit();
     }
     u_min_ = u_min;
     u_max_ = u_max;
@@ -245,7 +245,7 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
     //construction drake data;
     Eigen::VectorXd x(7+12);
     Eigen::VectorXd dx(6+12);
-    VectorXd x_(plant_.num_positions() + plant_.num_velocities());
+    VectorXd x_(plant_->num_positions() + plant_->num_velocities());
 
     x_ << x, dx;
 
@@ -272,8 +272,8 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
         dx(6+i) = motor_state->dq[i];
     }
 
-    SetPositionsIfNew(plant_, x, context_);
-    SetVelocitiesIfNew(plant_, dx, context_);
+    SetPositionsIfNew(*plant_, x, context_);
+    SetVelocitiesIfNew(*plant_, dx, context_);
 
     if (is_print_info_){
         std::cout<<motor_state->header.stamp<<"  "<<odo_data->header.stamp<<std::endl;
@@ -284,23 +284,23 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
     VectorXd JdotV_c_active = VectorXd::Zero(n_c_active_);
 
     for (unsigned int i = 0; i < all_contacts_.size(); i++) {
-        J_c.block(3 * i, 0,3, n_v_) = get_contact_jacobin(all_contacts_[i], plant_, *context_);
+        J_c.block(3 * i, 0,3, n_v_) = get_contact_jacobin(all_contacts_[i], *plant_, *context_);
     }
 
     for (unsigned int i = 0; i < all_contacts_.size(); i++) {
         auto contact_i = all_contacts_[i];
         J_c_active.block(3 * i, 0,3, n_v_) = J_c.block(3 * i, 0,3, n_v_);
         JdotV_c_active.block(3 * i, 0,3, n_v_) =
-                get_contact_jacobinDotTimesV(all_contacts_[i], plant_, *context_);
+                get_contact_jacobinDotTimesV(all_contacts_[i], *plant_, *context_);
     }
 
     // Get M, f_cg, B matrices of the manipulator equation
-    MatrixXd B = plant_.MakeActuationMatrix();
+    MatrixXd B = plant_->MakeActuationMatrix();
     MatrixXd M(n_v_, n_v_);
-    plant_.CalcMassMatrixViaInverseDynamics(*context_, &M);
+    plant_->CalcMassMatrixViaInverseDynamics(*context_, &M);
     VectorXd bias(n_v_);
-    plant_.CalcBiasTerm(*context_, &bias);
-    VectorXd grav = plant_.CalcGravityGeneralizedForces(*context_);
+    plant_->CalcBiasTerm(*context_, &bias);
+    VectorXd grav = plant_->CalcGravityGeneralizedForces(*context_);
     bias = bias - grav;
 
     // Update constraints

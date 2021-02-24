@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   song_msgs
         realtime_tools
+        roslib
 )
 
 ## System dependencies are found with CMake's conventions

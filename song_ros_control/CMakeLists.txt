@@ -128,6 +128,9 @@ add_library( a1_ros_controller
    src/A1Controller.cpp
 )
 
+add_library( a1_wbc_stand_controller
+        src/A1StandController.cpp)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -152,6 +155,10 @@ add_library( a1_ros_controller
 target_link_libraries(a1_ros_controller
    ${catkin_LIBRARIES}
 )
+
+target_link_libraries(a1_wbc_stand_controller
+        ${catkin_LIBRARIES}
+        )
 
 #############
 ## Install ##

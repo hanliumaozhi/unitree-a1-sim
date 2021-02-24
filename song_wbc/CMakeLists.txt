@@ -53,9 +53,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(wbc_stand_node src/WbcStand.cpp src/Utils.cpp src/OscTrackingData.cpp src/OscStandController.cpp)
+# add_library(wbc src/WbcStand.cpp src/Utils.cpp src/OscTrackingData.cpp src/OscStandController.cpp)
 
-target_link_libraries(wbc_stand_node
-        ${catkin_LIBRARIES}
-        drake::drake
-        )
+# target_link_libraries(wbc_stand_node
+#        ${catkin_LIBRARIES}
+#        drake::drake
+#        )

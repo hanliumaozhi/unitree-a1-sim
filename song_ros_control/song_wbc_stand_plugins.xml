@@ -1,0 +1,8 @@
+<library path="lib/liba1_wbc_stand_controller">
+    <class name="song_ros_control/A1StandController"
+           type="A1StandController"
+           base_class_type="controller_interface::ControllerBase"/>
+    <description>
+        The a1 stand controller.
+    </description>
+</library>

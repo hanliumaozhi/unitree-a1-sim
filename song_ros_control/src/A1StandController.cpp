@@ -1,22 +1,21 @@
 //
-// Created by han on 2021/2/20.
+// Created by han on 2021/2/24.
 //
 
-#include "song_ros_control/A1Controller.h"
+#include "song_ros_control/A1StandController.h"
 
-#include <memory>
-A1Controller::A1Controller()
+A1StandController::A1StandController()
 {
     memset(&last_cmd_, 0, sizeof(song_msgs::MotorCmd));
     memset(&last_state_, 0, sizeof(song_msgs::MotorState));
 }
 
-A1Controller::~A1Controller()
+A1StandController::~A1StandController()
 {
     sub_cmd_.shutdown();
 }
 
-bool A1Controller::init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n)
+bool A1StandController::init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n)
 {
     name_space = n.getNamespace();
 
@@ -41,14 +40,14 @@ bool A1Controller::init(hardware_interface::EffortJointInterface *robot, ros::No
         joint_list_.push_back(joint);
     }
 
-    sub_cmd_ = n.subscribe("command", 20, &A1Controller::cmd_cb, this);
+    sub_cmd_ = n.subscribe("command", 20, &A1StandController::cmd_cb, this);
 
     robot_status_pub_ = std::make_unique<realtime_tools::RealtimePublisher<song_msgs::MotorState>>(
             n, name_space + "/state", 1);
     return true;
 }
 
-void A1Controller::starting(const ros::Time& time)
+void A1StandController::starting(const ros::Time& time)
 {
     for (int i = 0; i < joint_name_list_.size(); ++i) {
         last_cmd_.tau[i] = 0.0;
@@ -61,7 +60,7 @@ void A1Controller::starting(const ros::Time& time)
     command_.initRT(last_cmd_);
 }
 
-void A1Controller::cmd_cb(const song_msgs::MotorCmdConstPtr& msg)
+void A1StandController::cmd_cb(const song_msgs::MotorCmdConstPtr& msg)
 {
     last_cmd_.tau = msg->tau;
     last_cmd_.joint_name = msg->joint_name;
@@ -69,7 +68,7 @@ void A1Controller::cmd_cb(const song_msgs::MotorCmdConstPtr& msg)
     command_.writeFromNonRT(last_cmd_);
 }
 
-void A1Controller::update(const ros::Time& time, const ros::Duration& period)
+void A1StandController::update(const ros::Time& time, const ros::Duration& period)
 {
     last_cmd_ = *(command_.readFromRT());
 
@@ -93,5 +92,4 @@ void A1Controller::update(const ros::Time& time, const ros::Duration& period)
     }
 }
 
-PLUGINLIB_EXPORT_CLASS(A1Controller, controller_interface::ControllerBase);
-
+PLUGINLIB_EXPORT_CLASS(A1StandController, controller_interface::ControllerBase);

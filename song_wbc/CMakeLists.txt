@@ -45,6 +45,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+
+catkin_package()
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}

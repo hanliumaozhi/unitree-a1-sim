@@ -27,6 +27,49 @@ OscStandController::OscStandController(const drake::multibody::MultibodyPlant<do
     }
     u_min_ = u_min;
     u_max_ = u_max;
+
+    /*auto position_dict = makeNameToPositionsMap(plant_);
+    for (auto& [key, value]: position_dict) {
+        std::cout << key << " has value " << value << std::endl;
+    }
+
+    auto input_name = makeNameToActuatorsMap(plant_);
+    for (auto& [key, value]: input_name) {
+        std::cout << key << " has value " << value << std::endl;
+    }*/
+    /*
+     * L_calf_joint has value 16
+FL_hip_joint has value 8
+FL_thigh_joint has value 12
+FR_calf_joint has value 15
+FR_hip_joint has value 7
+FR_thigh_joint has value 11
+RL_calf_joint has value 18
+RL_hip_joint has value 10
+RL_thigh_joint has value 14
+RR_calf_joint has value 17
+RR_hip_joint has value 9
+RR_thigh_joint has value 13
+base_qw has value 0
+base_qx has value 1
+base_qy has value 2
+base_qz has value 3
+base_x has value 4
+base_y has value 5
+base_z has value 6
+FL_calf_motor has value 5
+FL_hip_motor has value 3
+FL_thigh_motor has value 4
+FR_calf_motor has value 2
+FR_hip_motor has value 0
+FR_thigh_motor has value 1
+RL_calf_motor has value 11
+RL_hip_motor has value 9
+RL_thigh_motor has value 10
+RR_calf_motor has value 8
+RR_hip_motor has value 6
+RR_thigh_motor has value 7
+     */
 }
 
 void OscStandController::CheckCostSettings() {
@@ -195,4 +238,10 @@ void OscStandController::AddContactPoint(const ContactData evaluator)
 void OscStandController::AddAllLegTrackingData(OscTrackingData* tracking_data)
 {
     all_leg_data_vec_->push_back(tracking_data);
+}
+
+void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data)
+{
+    //construction drake data;
+
 }

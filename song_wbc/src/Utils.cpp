@@ -77,12 +77,11 @@ void SetVelocitiesIfNew(const MultibodyPlant<double>& plant,
     }
 }
 
-template <typename T>
-map<string, int> makeNameToPositionsMap(const MultibodyPlant<T>& plant) {
+map<string, int> makeNameToPositionsMap(const MultibodyPlant<double>& plant) {
     map<string, int> name_to_index_map;
     std::set<int> index_set;
     for (JointIndex i(0); i < plant.num_joints(); ++i) {
-        const drake::multibody::Joint<T>& joint = plant.get_joint(i);
+        const drake::multibody::Joint<double>& joint = plant.get_joint(i);
         auto name = joint.name();
 
         if (joint.num_velocities() == 1 && joint.num_positions() == 1) {
@@ -146,13 +145,13 @@ map<string, int> makeNameToPositionsMap(const MultibodyPlant<T>& plant) {
 ///  -Others are included as "state[ind]"
 ///  -Index mapping can also be used as a state mapping, AFTER
 ///     an offset of num_positions is applied (assumes x = [q;v])
-template <typename T>
-map<string, int> makeNameToVelocitiesMap(const MultibodyPlant<T>& plant) {
+
+map<string, int> makeNameToVelocitiesMap(const MultibodyPlant<double>& plant) {
     map<string, int> name_to_index_map;
     std::set<int> index_set;
 
     for (JointIndex i(0); i < plant.num_joints(); ++i) {
-        const drake::multibody::Joint<T>& joint = plant.get_joint(i);
+        const drake::multibody::Joint<double>& joint = plant.get_joint(i);
         // TODO(posa): this "dot" should be removed, it's an anachronism from
         // RBT
         auto name = joint.name() + "dot";
@@ -208,11 +207,10 @@ map<string, int> makeNameToVelocitiesMap(const MultibodyPlant<T>& plant) {
     return name_to_index_map;
 }
 
-template <typename T>
-map<string, int> makeNameToActuatorsMap(const MultibodyPlant<T>& plant) {
+map<string, int> makeNameToActuatorsMap(const MultibodyPlant<double>& plant) {
     map<string, int> name_to_index_map;
     for (JointActuatorIndex i(0); i < plant.num_actuators(); ++i) {
-        const drake::multibody::JointActuator<T>& actuator =
+        const drake::multibody::JointActuator<double>& actuator =
                 plant.get_joint_actuator(i);
         auto name = actuator.name();
 

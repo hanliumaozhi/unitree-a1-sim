@@ -12,6 +12,9 @@
 
 #include "song_wbc/Utils.h"
 #include "song_wbc/OSC/OscTrackingData.h"
+#include "song_msgs/MotorState.h"
+#include "song_msgs/MotorCmd.h"
+#include "nav_msgs/Odometry.h"
 
 class OscStandController {
 public:
@@ -37,6 +40,8 @@ public:
     void AddContactPoint(const ContactData evaluator);
 
     void AddAllLegTrackingData(OscTrackingData* tracking_data);
+
+    void update(const song_msgs::MotorStatePtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data);
 
 
 private:
@@ -101,8 +106,6 @@ private:
 
     std::unique_ptr<std::vector<OscTrackingData*>> all_leg_data_vec_ =
             std::make_unique<std::vector<OscTrackingData*>>();
-
-    void update();
 
     // Osc checkers and constructor-related methods
     void CheckCostSettings();

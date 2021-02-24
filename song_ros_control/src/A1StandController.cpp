@@ -26,6 +26,24 @@ bool A1StandController::init(hardware_interface::EffortJointInterface *robot, ro
     }
 
     n.getParam("joint_name_list", joint_name_list_);
+    n.getParam("W_com", w_com_);
+    W_com_ = Eigen::Map<Eigen::Matrix3d>(w_com_.data());
+
+    n.getParam("W_pelvis", w_pelvis_);
+    W_pelvis_ = Eigen::Map<Eigen::Matrix3d>(w_pelvis_.data());
+
+    n.getParam("K_p_com", k_p_com_);
+    K_p_com_ = Eigen::Map<Eigen::Matrix3d>(k_p_com_.data());
+
+    n.getParam("K_d_com", k_d_com_);
+    K_d_com_ = Eigen::Map<Eigen::Matrix3d>(k_d_com_.data());
+
+    n.getParam("K_p_pelvis", k_p_pelvis_);
+    K_p_pelvis_ = Eigen::Map<Eigen::Matrix3d>(k_p_pelvis_.data());
+
+    n.getParam("K_d_pelvis", k_d_pelvis_);
+    K_d_pelvis_ = Eigen::Map<Eigen::Matrix3d>(k_d_pelvis_.data());
+
 
     for (int i = 0; i < joint_name_list_.size(); ++i) {
         ROS_INFO_STREAM(joint_name_list_[i] << " \n ");

@@ -2,7 +2,7 @@
 // Created by han on 2021/2/23.
 //
 
-#include "song_wbc/controller/OscStandController.h"
+#include "song_ros_control/wbc/controller/OscStandController.h"
 
 using Eigen::VectorXd;
 using Eigen::Vector3d;

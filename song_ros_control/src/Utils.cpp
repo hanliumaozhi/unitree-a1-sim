@@ -2,7 +2,7 @@
 // Created by han on 2021/2/22.
 //
 
-#include "song_wbc/Utils.h"
+#include "song_ros_control/wbc/Utils.h"
 
 
 using drake::multibody::Frame;

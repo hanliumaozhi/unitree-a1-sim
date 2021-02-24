@@ -10,8 +10,8 @@
 #include "drake/solvers/solve.h"
 #include "drake/common/trajectories/piecewise_polynomial.h"
 
-#include "song_wbc/Utils.h"
-#include "song_wbc/OSC/OscTrackingData.h"
+#include "song_ros_control/wbc/Utils.h"
+#include "song_ros_control/wbc/OSC/OscTrackingData.h"
 #include "song_msgs/MotorState.h"
 #include "song_msgs/MotorCmd.h"
 #include "nav_msgs/Odometry.h"

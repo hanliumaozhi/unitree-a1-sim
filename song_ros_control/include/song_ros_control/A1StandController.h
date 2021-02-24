@@ -18,6 +18,9 @@
 
 #include <pluginlib/class_list_macros.h>
 
+#include "song_ros_control/wbc/controller/OscStandController.h"
+
+
 
 class A1StandController: public controller_interface::Controller<hardware_interface::EffortJointInterface>
 {
@@ -46,6 +49,23 @@ private:
 
     realtime_tools::RealtimeBuffer<song_msgs::MotorCmd> command_;
 
+    std::vector<double> w_com_;
+    Eigen::Matrix3d W_com_;
+
+    std::vector<double> k_p_com_;
+    Eigen::Matrix3d K_p_com_;
+
+    std::vector<double> k_d_com_;
+    Eigen::Matrix3d K_d_com_;
+
+    std::vector<double> w_pelvis_;
+    Eigen::Matrix3d W_pelvis_;
+
+    std::vector<double> k_p_pelvis_;
+    Eigen::Matrix3d K_p_pelvis_;
+
+    std::vector<double> k_d_pelvis_;
+    Eigen::Matrix3d K_d_pelvis_;
 };
 
 

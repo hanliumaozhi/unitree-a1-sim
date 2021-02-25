@@ -1,8 +1,0 @@
-<library path="lib/liba1_ros_controller">
-    <class name="song_ros_control/A1Controller"
-           type="A1Controller"
-           base_class_type="controller_interface::ControllerBase"/>
-    <description>
-        The a1 controller.
-    </description>
-</library>

@@ -15,12 +15,13 @@
 #include "song_msgs/MotorState.h"
 #include "song_msgs/MotorCmd.h"
 #include "nav_msgs/Odometry.h"
+#include "sensor_msgs/JointState.h"
 
 class OscStandController {
 public:
     OscStandController(const drake::multibody::MultibodyPlant<double>& plant,
                        drake::systems::Context<double>* context,
-                       bool print_info=false);
+                       bool print_info=true);
 
     void Build();
 
@@ -41,7 +42,7 @@ public:
 
     void AddAllLegTrackingData(OscTrackingData* tracking_data);
 
-    void update(const song_msgs::MotorStatePtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data, song_msgs::MotorCmd& motor_cmd);
+    void update(const sensor_msgs::JointStateConstPtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data, song_msgs::MotorCmd& motor_cmd);
 
 
 private:

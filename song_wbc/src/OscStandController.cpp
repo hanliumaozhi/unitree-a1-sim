@@ -240,7 +240,7 @@ void OscStandController::AddAllLegTrackingData(OscTrackingData* tracking_data)
     all_leg_data_vec_->push_back(tracking_data);
 }
 
-void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data, song_msgs::MotorCmd& motor_cmd)
+void OscStandController::update(const sensor_msgs::JointStateConstPtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data, song_msgs::MotorCmd& motor_cmd)
 {
     //construction drake data;
     Eigen::VectorXd x(7+12);
@@ -258,7 +258,7 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
     x(5) = odo_data->pose.pose.position.y;
     x(6) = odo_data->pose.pose.position.z;
     for (int i = 0; i < 12; ++i) {
-        x(7+i) = motor_state->q[i];
+        x(7+i) = motor_state->position[i];
     }
 
     dx(0) = odo_data->twist.twist.angular.x;
@@ -269,7 +269,7 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
     dx(5) = odo_data->twist.twist.linear.z;
 
     for (int i = 0; i < 12; ++i) {
-        dx(6+i) = motor_state->dq[i];
+        dx(6+i) = motor_state->velocity[i];
     }
 
     SetPositionsIfNew(plant_, x, context_);
@@ -290,7 +290,7 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
     for (unsigned int i = 0; i < all_contacts_.size(); i++) {
         auto contact_i = all_contacts_[i];
         J_c_active.block(3 * i, 0,3, n_v_) = J_c.block(3 * i, 0,3, n_v_);
-        JdotV_c_active.block(3 * i, 0,3, n_v_) =
+        JdotV_c_active.segment(3 * i,3) =
                 get_contact_jacobinDotTimesV(all_contacts_[i], plant_, *context_);
     }
 
@@ -366,6 +366,44 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
     for (auto tracking_data : *all_leg_data_vec_) {
         if (tracking_data->IsActive()) tracking_data->SaveYddotCommandSol(*dv_sol_);
     }
+
+    if (is_print_info_) {
+            std::cout << "\n" << to_string(result.get_solution_result()) << std::endl;
+            std::cout << "fsm_state = " << -1 << std::endl;
+            std::cout << "**********************\n";
+            std::cout << "u_sol = " << u_sol_->transpose() << std::endl;
+            std::cout << "lambda_c_sol = " << lambda_c_sol_->transpose() << std::endl;
+            std::cout << "lambda_h_sol = " << lambda_h_sol_->transpose() << std::endl;
+            std::cout << "dv_sol = " << dv_sol_->transpose() << std::endl;
+            std::cout << "epsilon_sol = " << epsilon_sol_->transpose() << std::endl;
+            std::cout << "**********************\n";
+            // 1. input cost
+            if (W_input_.size() > 0) {
+                std::cout << "input cost = "
+                          << 0.5 * (*u_sol_).transpose() * W_input_ * (*u_sol_) << std::endl;
+            }
+            // 2. acceleration cost
+            if (W_joint_accel_.size() > 0) {
+                std::cout << "acceleration cost = "
+                          << 0.5 * (*dv_sol_).transpose() * W_joint_accel_ * (*dv_sol_)
+                          << std::endl;
+            }
+            // 3. Soft constraint cost
+            if (w_soft_constraint_ > 0) {
+                std::cout << "soft constraint cost = "
+                          << 0.5 * w_soft_constraint_ * (*epsilon_sol_).transpose() *
+                             (*epsilon_sol_)
+                          << std::endl;
+            }
+                std::cout << "**********************\n";
+                for (auto tracking_data : *all_leg_data_vec_) {
+                    if (tracking_data->IsActive()) {
+                        tracking_data->PrintFeedbackAndDesiredValues((*dv_sol_));
+                    }
+                }
+                std::cout << "**********************\n\n";
+    }
+
 
     motor_cmd.joint_name[0] = "FR_hip_joint";
     motor_cmd.joint_name[1] = "FR_thigh_joint";

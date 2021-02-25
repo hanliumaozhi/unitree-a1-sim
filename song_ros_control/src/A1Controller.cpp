@@ -8,7 +8,7 @@
 A1Controller::A1Controller()
 {
     memset(&last_cmd_, 0, sizeof(song_msgs::MotorCmd));
-    memset(&last_state_, 0, sizeof(song_msgs::MotorState));
+    memset(&last_state_, 0, sizeof(sensor_msgs::JointState));
 }
 
 A1Controller::~A1Controller()
@@ -43,7 +43,7 @@ bool A1Controller::init(hardware_interface::EffortJointInterface *robot, ros::No
 
     sub_cmd_ = n.subscribe("command", 20, &A1Controller::cmd_cb, this);
 
-    robot_status_pub_ = std::make_unique<realtime_tools::RealtimePublisher<song_msgs::MotorState>>(
+    robot_status_pub_ = std::make_unique<realtime_tools::RealtimePublisher<sensor_msgs::JointState>>(
             n, name_space + "/state", 1);
     return true;
 }
@@ -53,10 +53,6 @@ void A1Controller::starting(const ros::Time& time)
     for (int i = 0; i < joint_name_list_.size(); ++i) {
         last_cmd_.tau[i] = 0.0;
         last_cmd_.joint_name[i] = joint_name_list_[i];
-        last_state_.q[i] = 0.0;
-        last_state_.dq[i] = 0.0;
-        last_state_.tau[i] = 0.0;
-        last_state_.joint_name[i] = joint_name_list_[i];
     }
     command_.initRT(last_cmd_);
 }
@@ -78,15 +74,19 @@ void A1Controller::update(const ros::Time& time, const ros::Duration& period)
     }
 
     if(robot_status_pub_ && robot_status_pub_->trylock()){
+        last_state_.name.resize(12);
+        last_state_.position.resize(12);
+        last_state_.velocity.resize(12);
+        last_state_.effort.resize(12);
         for (int i = 0; i != 12; ++i){
-            last_state_.joint_name[i] = joint_name_list_[i];
-            last_state_.q[i] = joint_list_[i].getPosition();
-            last_state_.dq[i] = joint_list_[i].getVelocity();
-            last_state_.tau[i] = joint_list_[i].getEffort();
+            last_state_.name[i] = joint_name_list_[i];
+            last_state_.position[i] = joint_list_[i].getPosition();
+            last_state_.velocity[i] = joint_list_[i].getVelocity();
+            last_state_.effort[i] = joint_list_[i].getEffort();
         }
-        robot_status_pub_->msg_.q = last_state_.q;
-        robot_status_pub_->msg_.dq = last_state_.dq;
-        robot_status_pub_->msg_.tau = last_state_.tau;
+        robot_status_pub_->msg_.position = last_state_.position;
+        robot_status_pub_->msg_.velocity = last_state_.velocity;
+        robot_status_pub_->msg_.effort = last_state_.effort;
         //robot_status_pub_->msg_ = time;
         robot_status_pub_->msg_.header.stamp = time;
         robot_status_pub_->unlockAndPublish();

@@ -453,9 +453,11 @@ Eigen::VectorXd OscStandController::update(Eigen::VectorXd x, Eigen::VectorXd dx
         if (i == 0) {
             std::cout<<555<<std::endl;
             Vector3d com_position(-0.00633, 0.000827254, 0.2786);
+
+            auto com_traj = drake::trajectories::PiecewisePolynomial<double>(com_position);
             tracking_data->Update(
                     x_, *context_,
-                    drake::trajectories::PiecewisePolynomial<double>(com_position), t, -1);
+                    com_traj, t, -1);
             std::cout<<666<<std::endl;
         }
         std::cout<<777<<std::endl;
@@ -463,9 +465,10 @@ Eigen::VectorXd OscStandController::update(Eigen::VectorXd x, Eigen::VectorXd dx
             std::cout<<999<<std::endl;
             VectorXd pelvis_desired_quat(4);
             pelvis_desired_quat << 1, 0, 0, 0;
+            auto pelvis_traj = drake::trajectories::PiecewisePolynomial<double>(pelvis_desired_quat);
             tracking_data->Update(
                     x_, *context_,
-                    drake::trajectories::PiecewisePolynomial<double>(pelvis_desired_quat), t, -1);
+                    pelvis_traj, t, -1);
         }
         /*std::cout<<888<<std::endl;
         VectorXd ddy_t = tracking_data->yddot_command_;
@@ -478,6 +481,8 @@ Eigen::VectorXd OscStandController::update(Eigen::VectorXd x, Eigen::VectorXd dx
         // We ignore the constant term
         // 0.5 * (JdotV - y_command)^T * W * (JdotV - y_command),
         // since it doesn't change the result of QP.
+        std::cout<<tracking_data->J_.transpose() * tracking_data->W_ * tracking_data->J_<<std::endl;
+        std::cout<<tracking_data->J_.transpose() * tracking_data->W_ * (tracking_data->JdotV_ - tracking_data->yddot_command_)<<std::endl;
         all_leg_tracking_cost_.at(i)->UpdateCoefficients(
                 tracking_data->J_.transpose() * tracking_data->W_ * tracking_data->J_, tracking_data->J_.transpose() * tracking_data->W_ * (tracking_data->JdotV_ - tracking_data->yddot_command_));
     }

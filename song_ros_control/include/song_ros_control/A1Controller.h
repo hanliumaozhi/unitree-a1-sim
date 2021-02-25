@@ -15,6 +15,7 @@
 
 #include <song_msgs/MotorCmd.h>
 #include <song_msgs/MotorState.h>
+#include <sensor_msgs/JointState.h>
 
 #include <pluginlib/class_list_macros.h>
 
@@ -34,11 +35,11 @@ private:
     std::string name_space;
 
     song_msgs::MotorCmd last_cmd_;
-    song_msgs::MotorState last_state_;
+    sensor_msgs::JointState last_state_;
 
     ros::Subscriber sub_cmd_;
 
-    std::unique_ptr<realtime_tools::RealtimePublisher<song_msgs::MotorState>> robot_status_pub_;
+    std::unique_ptr<realtime_tools::RealtimePublisher<sensor_msgs::JointState>> robot_status_pub_;
     std::vector<std::string> joint_name_list_;
     std::vector<hardware_interface::JointHandle> joint_list_;
     std::map<std::string, int> joint_name_to_index_;

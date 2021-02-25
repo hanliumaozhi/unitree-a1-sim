@@ -25,6 +25,8 @@ bool A1StandController::init(hardware_interface::EffortJointInterface *robot, ro
     addA1Multibody(plant_.get(), urdf_path);
     plant_->Finalize();
 
+    ROS_INFO_STREAM(plant_->num_velocities());
+
     context_ = plant_->CreateDefaultContext();
 
     osc_ = std::make_shared<OscStandController>(plant_, context_.get());
@@ -79,16 +81,16 @@ bool A1StandController::init(hardware_interface::EffortJointInterface *robot, ro
     K_d_pelvis_ = Eigen::Map<Eigen::Matrix3d>(k_d_pelvis_.data());
 
 
-    ComTrackingData center_of_mass_traj("com_traj", K_p_com_, K_d_com_,
+    ComTrackingDataRaw center_of_mass_traj("com_traj", K_p_com_, K_d_com_,
                                         W_com_,
                                         *plant_);
     osc_->AddAllLegTrackingData(&center_of_mass_traj);
 
-    RotTaskSpaceTrackingData pelvis_rot_traj(
+    /*RotTaskSpaceTrackingData pelvis_rot_traj(
             "base_rot_traj", K_p_pelvis_, K_d_pelvis_,
             W_pelvis_, *plant_);
     pelvis_rot_traj.AddFrameToTrack("base");
-    osc_->AddAllLegTrackingData(&pelvis_rot_traj);
+    osc_->AddAllLegTrackingData(&pelvis_rot_traj);*/
 
     osc_->Build();
 

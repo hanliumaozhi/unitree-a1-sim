@@ -12,6 +12,7 @@
 
 #include "song_ros_control/wbc/Utils.h"
 #include "song_ros_control/wbc/OSC/OscTrackingData.h"
+#include "song_ros_control/wbc/OSC/OscTrackingDataRaw.h"
 #include "song_msgs/MotorState.h"
 #include "song_msgs/MotorCmd.h"
 #include "nav_msgs/Odometry.h"
@@ -39,7 +40,7 @@ public:
 
     void AddContactPoint(const ContactData evaluator);
 
-    void AddAllLegTrackingData(OscTrackingData* tracking_data);
+    void AddAllLegTrackingData(ComTrackingDataRaw* tracking_data);
 
     void update(const song_msgs::MotorStatePtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data, song_msgs::MotorCmd& motor_cmd);
 
@@ -106,8 +107,8 @@ private:
     Eigen::VectorXd u_min_;
     Eigen::VectorXd u_max_;
 
-    std::unique_ptr<std::vector<OscTrackingData*>> all_leg_data_vec_ =
-            std::make_unique<std::vector<OscTrackingData*>>();
+    std::unique_ptr<std::vector<ComTrackingDataRaw*>> all_leg_data_vec_ =
+            std::make_unique<std::vector<ComTrackingDataRaw*>>();
 
     // Osc checkers and constructor-related methods
     void CheckCostSettings();

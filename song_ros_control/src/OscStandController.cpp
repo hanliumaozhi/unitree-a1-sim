@@ -235,7 +235,7 @@ void OscStandController::AddContactPoint(const ContactData evaluator)
     all_contacts_.push_back(evaluator);
 }
 
-void OscStandController::AddAllLegTrackingData(OscTrackingData* tracking_data)
+void OscStandController::AddAllLegTrackingData(ComTrackingDataRaw* tracking_data)
 {
     all_leg_data_vec_->push_back(tracking_data);
 }
@@ -243,7 +243,7 @@ void OscStandController::AddAllLegTrackingData(OscTrackingData* tracking_data)
 void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data, song_msgs::MotorCmd& motor_cmd)
 {
     //construction drake data;
-    Eigen::VectorXd x(7+12);
+    /*Eigen::VectorXd x(7+12);
     Eigen::VectorXd dx(6+12);
     VectorXd x_(plant_->num_positions() + plant_->num_velocities());
 
@@ -386,7 +386,7 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
 
     for (int i = 0; i < 12; ++i) {
         motor_cmd.tau[i] = (*u_sol_)(i);
-    }
+    }*/
 }
 
 Eigen::VectorXd OscStandController::update(Eigen::VectorXd x, Eigen::VectorXd dx, Eigen::VectorXd x_, double t)
@@ -453,23 +453,13 @@ Eigen::VectorXd OscStandController::update(Eigen::VectorXd x, Eigen::VectorXd dx
         if (i == 0) {
             std::cout<<555<<std::endl;
             Vector3d com_position(-0.00633, 0.000827254, 0.2786);
-
-            auto com_traj = drake::trajectories::PiecewisePolynomial<double>(com_position);
+            tracking_data->y_ = plant_->CalcCenterOfMassPosition(context_);
+            std::cout<<55<<std::endl;
             tracking_data->Update(
-                    x_, *context_,
-                    com_traj, t, -1);
+                    x_, *context_, com_position);
             std::cout<<666<<std::endl;
         }
-        std::cout<<777<<std::endl;
-        if (i == 1) {
-            std::cout<<999<<std::endl;
-            VectorXd pelvis_desired_quat(4);
-            pelvis_desired_quat << 1, 0, 0, 0;
-            auto pelvis_traj = drake::trajectories::PiecewisePolynomial<double>(pelvis_desired_quat);
-            tracking_data->Update(
-                    x_, *context_,
-                    pelvis_traj, t, -1);
-        }
+
         /*std::cout<<888<<std::endl;
         VectorXd ddy_t = tracking_data->yddot_command_;
         MatrixXd W = tracking_data->W_;
@@ -497,7 +487,7 @@ Eigen::VectorXd OscStandController::update(Eigen::VectorXd x, Eigen::VectorXd dx
     *epsilon_sol_ = result.GetSolution(epsilon_);
 
     for (auto tracking_data : *all_leg_data_vec_) {
-        if (tracking_data->IsActive()) tracking_data->SaveYddotCommandSol(*dv_sol_);
+        tracking_data->SaveYddotCommandSol(*dv_sol_);
     }
 
     return (*u_sol_);

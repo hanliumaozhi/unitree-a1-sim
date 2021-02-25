@@ -166,7 +166,7 @@ add_library( a1_ros_controller
 )
 
 add_library( a1_wbc_stand_controller
-        src/A1StandController.cpp src/OscStandController.cpp src/OscTrackingData.cpp src/Utils.cpp)
+        src/A1StandController.cpp src/OscStandController.cpp src/OscTrackingData.cpp src/Utils.cpp src/OscTrackingDataRaw.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

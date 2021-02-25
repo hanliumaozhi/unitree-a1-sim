@@ -388,3 +388,112 @@ void OscStandController::update(const song_msgs::MotorStatePtr& motor_state, con
         motor_cmd.tau[i] = (*u_sol_)(i);
     }
 }
+
+Eigen::VectorXd OscStandController::update(Eigen::VectorXd x, Eigen::VectorXd dx, Eigen::VectorXd x_, double t)
+{
+    SetPositionsIfNew(*plant_, x, context_);
+    SetVelocitiesIfNew(*plant_, dx, context_);
+
+    std::cout<<111<<std::endl;
+
+    MatrixXd J_c = MatrixXd::Zero(n_c_, n_v_);
+    MatrixXd J_c_active = MatrixXd::Zero(n_c_active_, n_v_);
+    VectorXd JdotV_c_active = VectorXd::Zero(n_c_active_);
+
+    for (unsigned int i = 0; i < all_contacts_.size(); i++) {
+        J_c.block(3 * i, 0,3, n_v_) = get_contact_jacobin(all_contacts_[i], *plant_, *context_);
+    }
+
+    for (unsigned int i = 0; i < all_contacts_.size(); i++) {
+        auto contact_i = all_contacts_[i];
+        J_c_active.block(3 * i, 0,3, n_v_) = J_c.block(3 * i, 0,3, n_v_);
+        JdotV_c_active.segment(3 * i, 3) =
+                get_contact_jacobinDotTimesV(all_contacts_[i], *plant_, *context_);
+    }
+
+    std::cout<<222<<std::endl;
+
+    // Get M, f_cg, B matrices of the manipulator equation
+    MatrixXd B = plant_->MakeActuationMatrix();
+    MatrixXd M(n_v_, n_v_);
+    plant_->CalcMassMatrixViaInverseDynamics(*context_, &M);
+    VectorXd bias(n_v_);
+    plant_->CalcBiasTerm(*context_, &bias);
+    VectorXd grav = plant_->CalcGravityGeneralizedForces(*context_);
+    bias = bias - grav;
+
+    // Update constraints
+    // 1. Dynamics constraint
+    ///    M*dv + bias == J_c^T*lambda_c + J_h^T*lambda_h + B*u
+    /// -> M*dv - J_c^T*lambda_c - J_h^T*lambda_h - B*u == - bias
+    /// -> [M, -J_c^T, -J_h^T, -B]*[dv, lambda_c, lambda_h, u]^T = - bias
+    MatrixXd A_dyn = MatrixXd::Zero(n_v_, n_v_ + n_c_ + n_h_ + n_u_);
+    A_dyn.block(0, 0, n_v_, n_v_) = M;
+    A_dyn.block(0, n_v_, n_v_, n_c_) = -J_c.transpose();
+    //A_dyn.block(0, n_v_ + n_c_, n_v_, n_h_) = -J_h.transpose();
+    A_dyn.block(0, n_v_ + n_c_ + n_h_, n_v_, n_u_) = -B;
+    dynamics_constraint_->UpdateCoefficients(A_dyn, -bias);
+
+    // 2. Contact constraint
+    MatrixXd A_c = MatrixXd::Zero(n_c_active_, n_v_ + n_c_active_);
+    A_c.block(0, 0, n_c_active_, n_v_) = J_c_active;
+    A_c.block(0, n_v_, n_c_active_, n_c_active_) =
+            MatrixXd::Identity(n_c_active_, n_c_active_);
+    contact_constraints_->UpdateCoefficients(A_c, -JdotV_c_active);
+
+    std::cout<<333<<std::endl;
+
+    // Update Cost
+
+
+    for (unsigned int i = 0; i < all_leg_data_vec_->size(); i++) {
+        std::cout<<444<<std::endl;
+        auto tracking_data = all_leg_data_vec_->at(i);
+        std::cout<<10000<<std::endl;
+        if (i == 0) {
+            std::cout<<555<<std::endl;
+            Vector3d com_position(-0.00633, 0.000827254, 0.2786);
+            tracking_data->Update(
+                    x_, *context_,
+                    drake::trajectories::PiecewisePolynomial<double>(com_position), t, -1);
+            std::cout<<666<<std::endl;
+        }
+        std::cout<<777<<std::endl;
+        if (i == 1) {
+            std::cout<<999<<std::endl;
+            VectorXd pelvis_desired_quat(4);
+            pelvis_desired_quat << 1, 0, 0, 0;
+            tracking_data->Update(
+                    x_, *context_,
+                    drake::trajectories::PiecewisePolynomial<double>(pelvis_desired_quat), t, -1);
+        }
+        /*std::cout<<888<<std::endl;
+        VectorXd ddy_t = tracking_data->yddot_command_;
+        MatrixXd W = tracking_data->W_;
+        MatrixXd J_t = tracking_data->J_;
+        VectorXd JdotV_t = tracking_data->JdotV_;*/
+        std::cout<<999<<std::endl;
+        // The tracking cost is
+        // 0.5 * (J_*dv + JdotV - y_command)^T * W * (J_*dv + JdotV - y_command).
+        // We ignore the constant term
+        // 0.5 * (JdotV - y_command)^T * W * (JdotV - y_command),
+        // since it doesn't change the result of QP.
+        all_leg_tracking_cost_.at(i)->UpdateCoefficients(
+                tracking_data->J_.transpose() * tracking_data->W_ * tracking_data->J_, tracking_data->J_.transpose() * tracking_data->W_ * (tracking_data->JdotV_ - tracking_data->yddot_command_));
+    }
+
+    const drake::solvers::MathematicalProgramResult result = Solve(*prog_);
+
+    // Extract solutions
+    *dv_sol_ = result.GetSolution(dv_);
+    *u_sol_ = result.GetSolution(u_);
+    *lambda_c_sol_ = result.GetSolution(lambda_c_);
+    *lambda_h_sol_ = result.GetSolution(lambda_h_);
+    *epsilon_sol_ = result.GetSolution(epsilon_);
+
+    for (auto tracking_data : *all_leg_data_vec_) {
+        if (tracking_data->IsActive()) tracking_data->SaveYddotCommandSol(*dv_sol_);
+    }
+
+    return (*u_sol_);
+}

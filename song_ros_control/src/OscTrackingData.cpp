@@ -43,12 +43,13 @@ bool OscTrackingData::Update(
 
     // Proceed based on the result of track_at_current_state_
     if (track_at_current_state_) {
+        std::cout<<1<<std::endl;
         // Careful: must update y_des_ before calling UpdateYAndError()
         // Update desired output
         y_des_ = traj.value(t);
         ydot_des_ = traj.MakeDerivative(1)->value(t);
         yddot_des_ = traj.MakeDerivative(2)->value(t);
-
+        std::cout<<2<<std::endl;
         // Update feedback output (Calling virtual methods)
         UpdateYAndError(x, context);
         UpdateYdotAndError(x, context);

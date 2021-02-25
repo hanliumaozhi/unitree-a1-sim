@@ -62,6 +62,7 @@ public:
 
     // Getters
     const std::string& GetName() const { return name_; };
+    std::string GetNames() { return name_; };
     int GetYDim() const { return n_y_; };
     int GetYdotDim() const { return n_ydot_; };
     bool IsActive() const { return track_at_current_state_; }
@@ -75,6 +76,12 @@ public:
     // correctly.
     void CheckOscTrackingData();
 
+    Eigen::MatrixXd J_;
+    Eigen::VectorXd JdotV_;
+    Eigen::VectorXd yddot_command_;
+    // Cost weights
+    Eigen::MatrixXd W_;
+
 protected:
     int GetStateIdx() const { return state_idx_; };
     void AddState(int state);
@@ -84,8 +91,6 @@ protected:
     Eigen::VectorXd error_ydot_;
     Eigen::VectorXd y_;
     Eigen::VectorXd ydot_;
-    Eigen::MatrixXd J_;
-    Eigen::VectorXd JdotV_;
 
     // Desired output
     Eigen::VectorXd y_des_;
@@ -94,7 +99,7 @@ protected:
     Eigen::VectorXd yddot_des_converted_;
 
     // Commanded acceleration after feedback terms
-    Eigen::VectorXd yddot_command_;
+
     // Osc solution
     Eigen::VectorXd yddot_command_sol_;
 
@@ -145,8 +150,7 @@ private:
     Eigen::MatrixXd K_p_;
     Eigen::MatrixXd K_d_;
 
-    // Cost weights
-    Eigen::MatrixXd W_;
+
 
     // Store whether or not the tracking data is active
     bool track_at_current_state_;

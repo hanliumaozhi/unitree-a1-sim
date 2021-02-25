@@ -44,12 +44,16 @@ private:
     nav_msgs::Odometry global_state_;
     song_msgs::MotorState last_state_;
 
+    nav_msgs::Odometry global_state__;
+
     ros::Subscriber sub_cmd_;
 
     std::unique_ptr<realtime_tools::RealtimePublisher<song_msgs::MotorState>> robot_status_pub_;
     std::vector<std::string> joint_name_list_;
     std::vector<hardware_interface::JointHandle> joint_list_;
     std::map<std::string, int> joint_name_to_index_;
+
+    std::vector<std::string> output_order_;
 
     realtime_tools::RealtimeBuffer<nav_msgs::Odometry> command_;
 

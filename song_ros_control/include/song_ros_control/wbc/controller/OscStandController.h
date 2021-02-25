@@ -43,6 +43,8 @@ public:
 
     void update(const song_msgs::MotorStatePtr& motor_state, const nav_msgs::OdometryConstPtr& odo_data, song_msgs::MotorCmd& motor_cmd);
 
+    Eigen::VectorXd update(Eigen::VectorXd x, Eigen::VectorXd dx, Eigen::VectorXd x_, double t);
+
 
 private:
     std::shared_ptr<drake::multibody::MultibodyPlant<double>> plant_;

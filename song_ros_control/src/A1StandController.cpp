@@ -6,7 +6,7 @@
 
 A1StandController::A1StandController()
 {
-    memset(&global_state_, 0, sizeof(song_msgs::MotorCmd));
+    memset(&global_state_, 0, sizeof(nav_msgs::Odometry));
     memset(&last_state_, 0, sizeof(song_msgs::MotorState));
 }
 
@@ -17,7 +17,6 @@ A1StandController::~A1StandController()
 
 bool A1StandController::init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n)
 {
-    name_space = n.getNamespace();
 
     std::string path = ros::package::getPath("song_ros_control");
     std::string urdf_path = path + "/urdf/a1.urdf";
@@ -51,6 +50,8 @@ bool A1StandController::init(hardware_interface::EffortJointInterface *robot, ro
     int n_v = plant_->num_velocities();
     Eigen::MatrixXd Q_accel = 0.01 * Eigen::MatrixXd::Identity(n_v, n_v);
     osc_->SetAccelerationCostForAllJoints(Q_accel);
+
+    name_space = n.getNamespace();
 
     urdf::Model urdf; // Get URDF info about joint
     if (!urdf.initParamWithNodeHandle("robot_description", n)){
@@ -109,16 +110,34 @@ bool A1StandController::init(hardware_interface::EffortJointInterface *robot, ro
 
     robot_status_pub_ = std::make_unique<realtime_tools::RealtimePublisher<song_msgs::MotorState>>(
             n, name_space + "/state", 1);
+
+    output_order_.resize(12);
+    output_order_[0] = "FR_hip_joint";
+    output_order_[1] = "FR_thigh_joint";
+    output_order_[2] = "FR_calf_joint";
+
+    output_order_[3] = "FL_hip_joint";
+    output_order_[4] = "FL_thigh_joint";
+    output_order_[5] = "FL_calf_joint";
+
+    output_order_[6] = "RR_hip_joint";
+    output_order_[7] = "RR_thigh_joint";
+    output_order_[8] = "RR_calf_joint";
+
+    output_order_[9] = "RR_hip_joint";
+    output_order_[10] = "RR_thigh_joint";
+    output_order_[11] = "RR_calf_joint";
+
     return true;
 }
 
 void A1StandController::starting(const ros::Time& time)
 {
+    global_state_.pose.pose.orientation.w = 1;
+    global_state_.pose.pose.position.x = -0.006337;
+    global_state_.pose.pose.position.y = 0.00082725;
+    global_state_.pose.pose.position.z = 0.278652;
     for (int i = 0; i < joint_name_list_.size(); ++i) {
-        global_state_.pose.pose.orientation.w = 1;
-        global_state_.pose.pose.position.x = -0.006337;
-        global_state_.pose.pose.position.y = 0.00082725;
-        global_state_.pose.pose.position.z = 0.278652;
         last_state_.q[i] = 0.0;
         last_state_.dq[i] = 0.0;
         last_state_.tau[i] = 0.0;
@@ -140,11 +159,45 @@ void A1StandController::inertial_cb(const nav_msgs::OdometryConstPtr& msg)
 
 void A1StandController::update(const ros::Time& time, const ros::Duration& period)
 {
-    global_state_ = *(command_.readFromRT());
+    global_state__ = *(command_.readFromRT());
 
-    /*for (int i = 0; i != 12; ++i){
-        joint_list_[joint_name_to_index_[last_cmd_.joint_name[i]]].setCommand(last_cmd_.tau[i]);
-    }*/
+    Eigen::VectorXd x(7+12);
+    Eigen::VectorXd dx(6+12);
+    Eigen::VectorXd x_(plant_->num_positions() + plant_->num_velocities());
+
+    // update
+    x(0) = global_state__.pose.pose.orientation.w;
+    x(1) = global_state__.pose.pose.orientation.x;
+    x(2) = global_state__.pose.pose.orientation.y;
+    x(3) = global_state__.pose.pose.orientation.z;
+    x(4) = global_state__.pose.pose.position.x;
+    x(5) = global_state__.pose.pose.position.y;
+    x(6) = global_state__.pose.pose.position.z;
+    for (int i = 0; i < 12; ++i) {
+        x(7+i) = joint_list_[i].getPosition();
+    }
+
+    dx(0) = global_state__.twist.twist.angular.x;
+    dx(1) = global_state__.twist.twist.angular.y;
+    dx(2) = global_state__.twist.twist.angular.z;
+    dx(3) = global_state__.twist.twist.linear.x;
+    dx(4) = global_state__.twist.twist.linear.y;
+    dx(5) = global_state__.twist.twist.linear.z;
+
+    for (int i = 0; i < 12; ++i) {
+        dx(6+i) = joint_list_[i].getVelocity();
+    }
+
+    x_ << x, dx;
+
+
+    auto joint_tau = osc_->update(x, dx, x_, time.toSec());
+
+    ROS_INFO_STREAM(joint_tau);
+
+    for (int i = 0; i < 12; ++i) {
+        joint_list_[joint_name_to_index_[output_order_[i]]].setCommand(joint_tau[i]);
+    }
 
     if(robot_status_pub_ && robot_status_pub_->trylock()){
         for (int i = 0; i != 12; ++i){
